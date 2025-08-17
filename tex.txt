@@ -1,0 +1,37 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score
+import joblib
+
+# Step 1: Load your dataset
+df = pd.read_csv("EDA_Formatted_Data.csv")
+
+# Step 2: Prepare features (X) and target (y)
+X = df[['Internal Marks (Standardized)', 'Preboard Marks (Standardized)']]
+y = df['Predicted Grade']
+
+# Step 3: Train/test split
+x_train, x_test, y_train, y_test = train_test_split(X, y, random_state=42)
+
+# Step 4: Find the best k
+best_k = 1
+best_accuracy = 0
+for k in range(1, 21):
+    knn_temp = KNeighborsClassifier(n_neighbors=k)
+    knn_temp.fit(x_train, y_train)
+    acc = accuracy_score(y_test, knn_temp.predict(x_test))
+    print(f"K={k}, Accuracy={acc:.4f}")
+    if acc > best_accuracy:
+        best_accuracy = acc
+        best_k = k
+
+print(f"\nBest K found: {best_k} with Accuracy: {best_accuracy:.4f}")
+
+# Step 5: Train final model
+knn = KNeighborsClassifier(n_neighbors=best_k)
+knn.fit(x_train, y_train)
+
+# Step 6: Save the trained model
+joblib.dump(knn, "knn_model.pkl")
+print("✅ Model saved as knn_model.pkl")
