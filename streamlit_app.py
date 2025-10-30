@@ -1,9 +1,10 @@
 import streamlit as st
 import pandas as pd
-import joblib
 import os
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.neighbors import KNeighborsClassifier
+
 csv_file = "EDA_Formatted_Data.csv"
 if os.path.exists(csv_file):
     df = pd.read_csv(csv_file)
@@ -11,12 +12,15 @@ if os.path.exists(csv_file):
 else:
     st.error(f"❌ {csv_file} not found!")
 
-model_file = "knn_model.pkl"
-if os.path.exists(model_file):
-    knn = joblib.load(model_file)
-    st.success(" Model loaded successfully!")
+# Train the model directly in the app
+if 'df' in locals():
+    X = df[['Internal Marks (Standardized)', 'Preboard Marks (Standardized)']]
+    y = df['Predicted Grade']
+    knn = KNeighborsClassifier(n_neighbors=5)
+    knn.fit(X, y)
+    st.success(" Model trained successfully!")
 else:
-    st.error(f"❌ {model_file} not found!")
+    st.error("Dataset not loaded, cannot train model.")
 
 st.title("Student Grade Prediction App (KNN)")
 
@@ -36,9 +40,9 @@ if 'df' in locals():
     st.subheader("Internal vs Preboard Marks")
     fig1, ax1 = plt.subplots()
     sns.scatterplot(
-        x='Internal Marks (Standardized)', 
-        y='Preboard Marks (Standardized)', 
-        hue='Predicted Grade', 
+        x='Internal Marks (Standardized)',
+        y='Preboard Marks (Standardized)',
+        hue='Predicted Grade',
         data=df, ax=ax1
     )
     st.pyplot(fig1)
